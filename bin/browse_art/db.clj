@@ -5,58 +5,57 @@
               :subprotocol "sqlite"
               :subname "browse-art.db"})
 
+(defmacro with-db [f & body]
+  '(jdbc/with-connection ~db-spec (~f ~@body)))
+
 (defn create-db
   []
   (jdbc/with-connection db-spec))
 
 (defn create-tables
   []
-  (do
-		(jdbc/with-connection db-spec
-		  (jdbc/create-table :url_list
-		                     [:id "integer primary key"]
-		                     [:url "varchar"]))
-		(jdbc/with-connection db-spec
-		  (jdbc/create-table :word_list
-		                     [:id "integer primary key"]
-		                     [:word "varchar"]))
-		(jdbc/with-connection db-spec
-		  (jdbc/create-table :word_location
-		                     [:id "integer primary key"]
-		                     [:url_id "varchar"]
-		                     [:word_id "varchar"]
-		                     [:location "varchar"]))
-		(jdbc/with-connection db-spec
-		  (jdbc/create-table :link
-		                     [:id "integer primary key"]
-		                     [:from_id "integer"]
-		                     [:to_id "integer"]))
-		(jdbc/with-connection db-spec
-		  (jdbc/create-table :link_words
-		                     [:id "integer primary key"]
-		                     [:word_id "integer"]
-		                     [:link_id "integer"]))))
-
+  (jdbc/with-connection db-spec
+	  (jdbc/create-table :word_list
+	                     [:id "integer primary key"]
+	                     [:word "varchar"]))
+	(jdbc/with-connection db-spec
+	  (jdbc/create-table :word_location
+	                     [:id "integer primary key"]
+	                     [:object_id "integer"]
+	                     [:word_id "integer"]
+	                     [:location "integer"]))
+  (jdbc/with-connection db-spec
+	  (jdbc/create-table :object_list
+	                     [:id "integer primary key"]
+	                     [:title "varchar"]
+	                     [:creator "varchar"]
+	                     [:style "varchar"]
+	                     [:collection "varchar"]
+	                     [:period "varchar"]
+	                     [:description "varchar"]
+	                     [:keywords "varchar"]
+	                     [:medium "varchar"]
+	                     [:object_name "varchar"]
+	                     [:date_begin_year "integer"]
+	                     [:date_end_year "integer"]
+	                     [:image "varchar"]
+	                     [:object_id "integer"])))
+           
 (defn create-index
-  []
-  (do
-    (jdbc/with-connection db-spec
-		  (jdbc/do-commands "CREATE INDEX url_idx ON url_list (url)"))
-		(jdbc/with-connection db-spec
-		  (jdbc/do-commands "CREATE INDEX word_idx ON word_list (word)"))
-		(jdbc/with-connection db-spec
-		  (jdbc/do-commands "CREATE INDEX word_url_idx ON word_location (word_id)"))
-		(jdbc/with-connection db-spec
-		  (jdbc/do-commands "CREATE INDEX url_to_idx ON link (to_id)"))
-		(jdbc/with-connection db-spec
-		  (jdbc/do-commands "CREATE INDEX url_from_idx ON link (from_id)"))))
+ []
+  (jdbc/with-connection db-spec
+	  (jdbc/do-commands "CREATE INDEX object_idx ON object_list (object_id)"))
+	(jdbc/with-connection db-spec
+	  (jdbc/do-commands "CREATE INDEX word_idx ON word_list (word)"))
+	(jdbc/with-connection db-spec
+	  (jdbc/do-commands "CREATE INDEX word_url_idx ON word_location (word_id)")))
 
 (defn save-word-location 
-  [{:keys [url-id word-id location]}]
+  [{:keys [object-id word-id location]}]
   (jdbc/with-connection db-spec
     (jdbc/insert-values :word_location
-      [:url_id :word_id :location]
-      [url-id word-id location])))
+      [:object_id :word_id :location]
+      [object-id word-id location])))
 
 ;(defn save-record 
 ;  [table record-map]
@@ -87,7 +86,8 @@
 (defn get-id
   [table field value]
   (jdbc/with-connection db-spec
-    (jdbc/with-query-results res [(str "select id from " table " where " field "='" value "'")]
+    (jdbc/with-query-results res 
+      [(str "select id from " table " where " field "='" (clojure.string/replace value #"'" "''") "'")];escaping apostrophe char
       (get (first res) :id))))
 
 (defn get-and-create-entry-id
@@ -96,6 +96,16 @@
   (if-let [id (get-id table field value)]
     id
     (create-new-entry table field value)))
+		           
+(defn save-object
+  [obj]
+  (jdbc/with-connection db-spec
+    (jdbc/insert-values :object_list 
+                        [:title :creator :style :collection :period :description :keywords :medium
+                         :object_name :date_begin_year :date_end_year :image :object_id] 
+                        [(:Title obj) (:Creator obj) (:Style obj) (:Collection obj) (:Period obj)
+                         (:Description obj) (:Keywords obj) (:Medium obj) (:ObjectName obj) 
+                         (:DateBeginYear obj) (:DateEndYear obj) (:Images obj) (:ObjectID obj)])))
 
 (defn select-all 
   [table]
@@ -113,13 +123,15 @@
     (jdbc/with-query-results res [full-query]
       (doall res))))
 
-(defn get-url-name
-  [url-id]
+(defn get-object-name
+  [object-id]
   (jdbc/with-connection db-spec
-    (jdbc/with-query-results res [(str "select url from url_list where id='" url-id "'")]
-      (get (first res) :url))))
+    (jdbc/with-query-results res [(str "select object_id from object_list where object_id=" object-id)]
+      (get (first res) :object_id))))
 
-;ne treba za sad
-(defn db-commit
-  []
-  )
+(defmacro start-transaction
+  [f]
+  (jdbc/with-connection db-spec
+    (jdbc/transaction
+      ~f)))
+

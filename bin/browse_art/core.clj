@@ -1,7 +1,18 @@
 (ns browse-art.core
-  (:require [clojure.data.json :as json]))
-  
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
+  (:require [browse-art.db :as db]))
+
+(defn db-initial-setup
+  []
+  (do
+    (db/create-db)
+    (db/create-tables)
+    (db/create-index)))
+
+;(defn start 
+;  []
+;  (crawler/crawl)
+;  (run-jetty application {:port port :join? false}))
+;
+;(defn -main 
+;  []
+;  (start))

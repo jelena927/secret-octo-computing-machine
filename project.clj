@@ -7,4 +7,7 @@
                  [clj-soup/clojure-soup "0.1.1"]
                  [org.clojure/java.jdbc "0.2.3"]
                  [sqlitejdbc "0.5.6"]
-                 [org.clojure/data.json "0.2.5"]])
+                 [org.clojure/data.json "0.2.5"]
+                 [compojure "1.1.6"]
+                 [hiccup "1.0.5"]
+                 [ring "1.2.1"]])
