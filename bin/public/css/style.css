@@ -1,0 +1,47 @@
+body {
+	width: 80%;
+	margin: 0 auto;
+}
+.gallery img {
+	margin: 15px;
+}
+#searchform {
+	padding-top: 15px;
+	padding-bottom: 20px;
+}
+.searchinput{
+	width: 80%;
+	margin: 0;
+	padding: 5px 15px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 0.9em;
+	border: 1px solid #0076a3;
+	border-radius: 5px 5px;
+}
+@font-face {
+	font-family: myFirstFont;
+	src: url(../font/deborstel/DeBorstelBrush-Reduced.ttf);
+}
+header {
+	float: left;
+	width: 100%;
+	padding: 20px;
+}
+header h1 {
+	font-family: myFirstFont;
+	font-size: 2.4em;
+}
+footer {
+	float: left;
+	width: 100%;
+	padding-top: 20px;
+	padding-bottom: 20px;
+}
+section {
+	float: left;
+	width: 80%;
+}
+aside{
+	float: right;
+	width: 20%;
+}

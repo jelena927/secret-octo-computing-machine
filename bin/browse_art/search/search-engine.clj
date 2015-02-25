@@ -1,32 +1,31 @@
-(ns browse-art.search-engine
-  (:require [browse-art.db :as db]))
+(ns browse-art.search.search-engine
+  (:require [browse-art.db.db :as db]))
 
-(defn get-match-rows ;TODO case sensitive je za sad ; ako ne nadje sve reci na strani ne vraca je 
+(defn get-match-rows 
   [query-words]
   (if-let 
     [query-parts 
      (reduce 
        (fn[acc word]
-         (if-let [word-id (db/get-word-id (.toLowerCase word))]
+         (if-let [word-id (db/get-word-id (.toLowerCase (clojure.string/trim word)))]
            (let [table-number (:table-number acc)]
-           {:field-list (str (:field-list acc) ", " (format " w%s.location " table-number))
-           :table-list (str (:table-list acc) (if (pos? table-number) ", ") (format "word_location w%s " table-number))
-           :clause-list (str 
-                          (:clause-list acc) 
-                          (if (pos? table-number) (format " and w%s.object_id=w%s.object_id and " (dec table-number) table-number)) 
-                          (format "w%s.word_id=%s " table-number word-id))
-           :table-number (inc table-number)
-           :word-ids (conj (:word-ids acc) word-id)})
-           acc))
+	           {:field-list (str (:field-list acc) ", " (format " w%s.location " table-number))
+	           :table-list (str (:table-list acc) (if (pos? table-number) ", ") (format "word_location w%s " table-number))
+	           :clause-list (str 
+	                          (:clause-list acc) 
+	                          (if (pos? table-number) (format " and w%s.object_id=w%s.object_id and " (dec table-number) table-number)) 
+	                          (format "w%s.word_id=%s " table-number word-id))
+	           :table-number (inc table-number)
+	           :word-ids (conj (:word-ids acc) word-id)})
+             acc))
          {:field-list "w0.object_id" :table-list "" :clause-list "" :table-number 0 :word-ids []}
          (clojure.string/split query-words #" "))]
-    {:rows (if-not (zero? (:table-number query-parts))
-             (db/execute-query 
-               (str "select " (:field-list query-parts) 
-                   " from " (:table-list query-parts)
-                   " where " (:clause-list query-parts)))
-             )
-     :word-ids (:word-ids query-parts)}))  
+      {:rows (if-not (zero? (:table-number query-parts))
+               (db/execute-query 
+                 (str "select " (:field-list query-parts) 
+                     " from " (:table-list query-parts)
+                     " where " (:clause-list query-parts))))
+       :word-ids (:word-ids query-parts)}))  
 ;primer rezultata {:rows ({:location_3 "9", :location_2 "13", :location "0", :object_id "19"}), :word-ids [1 1160 1156]}
 
 
@@ -117,10 +116,6 @@
        {} 
        weights)))
 
-(defn get-object-name
-  [object-id]
-  (db/get-object-name object-id))
-
 (defn query
   [q]
   (let [match-rows (get-match-rows q) 
@@ -128,7 +123,9 @@
         ids (:word-ids match-rows)]
     (if rows
       (let [scores (get-scored-list rows ids)]
-        (map (fn [[k v]] (println v (get-object-name (name k)))) (sort-by val > scores))))))
+        (map 
+          (fn [ob] (conj ob (db/get-object-image (name (first ob))))) 
+          (sort-by val > scores))))))
 
 
 

@@ -1,4 +1,4 @@
-(ns browse-art.db
+(ns browse-art.db.db
   (:require [clojure.java.jdbc :as jdbc]))
 
 (def db-spec {:classname "org.sqlite.JDBC"
@@ -104,8 +104,8 @@
                         [:title :creator :style :collection :period :description :keywords :medium
                          :object_name :date_begin_year :date_end_year :image :object_id] 
                         [(:Title obj) (:Creator obj) (:Style obj) (:Collection obj) (:Period obj)
-                         (:Description obj) (:Keywords obj) (:Medium obj) (:ObjectName obj) 
-                         (:DateBeginYear obj) (:DateEndYear obj) (:Images obj) (:ObjectID obj)])))
+                         (:Description obj) (:Keywords obj) (:Medium obj) (:ObjectName obj) (:DateBeginYear obj) 
+                         (:DateEndYear obj) (first (clojure.string/split (:Images obj) #",")) (:ObjectID obj)])))
 
 (defn select-all 
   [table]
@@ -123,11 +123,17 @@
     (jdbc/with-query-results res [full-query]
       (doall res))))
 
-(defn get-object-name
+(defn get-all-object-images
+  []
+  (jdbc/with-connection db-spec
+    (jdbc/with-query-results res [(str "select object_id, image from object_list")]
+      (doall res))))
+
+(defn get-object-image
   [object-id]
   (jdbc/with-connection db-spec
-    (jdbc/with-query-results res [(str "select object_id from object_list where object_id=" object-id)]
-      (get (first res) :object_id))))
+    (jdbc/with-query-results res [(str "select image from object_list where object_id=" object-id)]
+      (get (first res) :image))))
 
 (defmacro start-transaction
   [f]

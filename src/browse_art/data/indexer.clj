@@ -1,5 +1,5 @@
-(ns browse-art.indexer
-  (:require [browse-art.db :as db]))
+(ns browse-art.data.indexer
+  (:require [browse-art.db.db :as db]))
 
 (def ignore-words ["the", "of", "to", "and", "a", "in", "is", "it"])
 
