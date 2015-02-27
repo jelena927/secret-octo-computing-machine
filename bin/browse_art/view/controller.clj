@@ -1,5 +1,6 @@
 (ns browse-art.view.controller
   (:require [browse-art.view.search-template :as search-template]
+            [browse-art.view.object-template :as object-template]
             [browse-art.search.search-engine :as search-engine]
             [browse-art.db.db :as db]))
 
@@ -23,10 +24,7 @@
 
 (defn show
   [id]
-;(if-let [url (@mappings id)]
-;  (response/redirect url)
-;  {
-;   :status 404
-;   :body (str "No such short URL: " id)
-;   })
-  )
+  "Object details page"
+  (if-let [object (db/get-object (Integer. id))]
+    (object-template/layout object)
+    (str "Object not found!")))

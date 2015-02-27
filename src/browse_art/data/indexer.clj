@@ -23,17 +23,18 @@
 
 (defn add-to-index 
   [objects-vector]
-  (map
-    (fn [object]
-      (when-not (indexed? (:ObjectID object))
-        (db/save-object object)
-        (reduce 
-          (fn [counter word]
-            (if-not (some #(.equalsIgnoreCase word %) ignore-words)
-              (db/save-word-location {:object-id (:ObjectID object) 
-                                      :word-id (db/get-and-create-entry-id "word_list" "word" (.toLowerCase word)) 
-                                      :location counter}))
-            (inc counter))
-          0
-          (separate-words (extract-text object)))))
-    objects-vector))
+  (db/start-transaction
+	  (map
+	    (fn [object]
+	      (when-not (indexed? (:ObjectID object))
+	        (db/save-object object)
+	        (reduce 
+	          (fn [counter word]
+	            (if-not (some #(.equalsIgnoreCase word %) ignore-words)
+	              (db/save-word-location (:ObjectID object) 
+	                                      (db/get-and-create-entry-id "word_list" "word" (.toLowerCase word)) 
+	                                      counter))
+	            (inc counter))
+	          0
+	          (separate-words (extract-text object)))))
+	    objects-vector)))

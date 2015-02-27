@@ -34,14 +34,35 @@ header h1 {
 footer {
 	float: left;
 	width: 100%;
-	padding-top: 20px;
+	padding-top: 40px;
 	padding-bottom: 20px;
 }
-section {
+a {
+	color: #4183c4;
+	text-decoration: none;
+}
+section.gallery {
 	float: left;
 	width: 80%;
 }
-aside{
+aside.gallery{
 	float: right;
 	width: 20%;
+}
+section.details{
+	float: left;
+	width: 60%;
+}
+aside.details{
+	float: left;
+	width: 40%;
+	padding-top: 80px;
+	line-height: 200%;
+}
+.label {
+	font-family: myFirstFont;
+	padding-right: 5px;
+}
+.back{
+	float: right;
 }

@@ -19,10 +19,10 @@
       (map
         (fn
           [[id image]]
-			      [:a {:href (str "/" id) } 
+			      [:a {:href (str "/object/" id) } 
 			       [:img {:src (str "http://static.thewalters.org/images/" image "?width=100")}]])
 	      objects)]
-     [:aside
+     [:aside {:class "gallery" }
       [:div
        [:form {:id "searchform" :method "GET" :action "/search"}
         [:input {:type "text" :placeholder "Search" :class "searchinput" :name "query" :value query
@@ -34,5 +34,6 @@
 			cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
 			proident, sunt in culpa qui officia deserunt mollit anim id est laborum."]]
      [:footer 
-      [:center "Copyright &#169; 2015 jelena927@gmail.com"]]
+      [:center "Copyright &#169; 2015 " 
+       [:a {:href "mailto:jelena927@gmail.com"} "jelena927@gmail.com"]]]
      ]))

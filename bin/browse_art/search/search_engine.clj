@@ -21,7 +21,7 @@
          {:field-list "w0.object_id" :table-list "" :clause-list "" :table-number 0 :word-ids []}
          (clojure.string/split query-words #" "))]
       {:rows (if-not (zero? (:table-number query-parts))
-               (db/execute-query 
+               (db/execute-query
                  (str "select " (:field-list query-parts) 
                      " from " (:table-list query-parts)
                      " where " (:clause-list query-parts))))
