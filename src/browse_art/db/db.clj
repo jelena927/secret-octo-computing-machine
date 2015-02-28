@@ -15,28 +15,29 @@
   []
   (jdbc/with-connection spec
 	  (jdbc/create-table :word_list
-	                     [:id "integer primary key"]
-	                     [:word "varchar"])
+                      [:id "integer primary key"]
+                      [:word "varchar"])
 	  (jdbc/create-table :word_location
-	                     [:id "integer primary key"]
-	                     [:object_id "integer"]
-	                     [:word_id "integer"]
-	                     [:location "integer"])
+                      [:id "integer primary key"]
+                      [:object_id "integer"]
+                      [:word_id "integer"]
+                      [:location "integer"])
 	  (jdbc/create-table :object_list
-	                     [:id "integer primary key"]
-	                     [:title "varchar"]
-	                     [:creator "varchar"]
-	                     [:style "varchar"]
-	                     [:collection "varchar"]
-	                     [:period "varchar"]
-	                     [:description "varchar"]
-	                     [:keywords "varchar"]
-	                     [:medium "varchar"]
-	                     [:object_name "varchar"]
-	                     [:date_begin_year "integer"]
-	                     [:date_end_year "integer"]
-	                     [:image "varchar"]
-	                     [:object_id "integer"])))
+                      [:id "integer primary key"]
+                      [:title "varchar"]
+                      [:creator "varchar"]
+                      [:style "varchar"]
+                      [:collection "varchar"]
+                      [:period "varchar"]
+                      [:description "varchar"]
+                      [:keywords "varchar"]
+                      [:medium "varchar"]
+                      [:object_name "varchar"]
+                      [:date_begin_year "integer"]
+                      [:date_end_year "integer"]
+                      [:image "varchar"]
+                      [:object_id "integer"]
+                      [:cluster "integer"])))
            
 (defn create-index
   []
@@ -132,3 +133,23 @@
   (execute-query "SELECT name 
                   FROM sqlite_master 
                   WHERE type='table' AND name='object_list';"))
+
+(defn count-word-occurrence
+  [word-id object-id]
+  (first 
+	  (execute-query 
+	    (str "SELECT count(*) as count
+	          FROM word_location 
+	          WHERE word_id=" word-id " and object_id=" object-id))))
+
+(defn get-all-object-ids
+  []
+  (with-db 
+    jdbc/with-query-results res [(str "select object_id from object_list")]
+    (doall res)))
+
+(defn add-cluster-info
+  [object-id cluster]
+  (with-db jdbc/update-values "object_list"
+     [(str "object_id=" object-id)] {:cluster cluster}))
+

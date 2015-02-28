@@ -3,7 +3,8 @@
   (:require [browse-art.db.db :as db]
             [browse-art.view.controller :as controller]
             [browse-art.data.data-loader :as loader]
-            [browse-art.data.indexer :as indexer])
+            [browse-art.data.indexer :as indexer]
+            [browse-art.data.clusterer :as clusterer])
   (:use [ring.adapter.jetty :only (run-jetty)]
 			  [compojure.core :only (GET POST PUT defroutes)]
 			  [compojure.handler :only (api)]
@@ -36,7 +37,7 @@
   (println (indexer/add-to-index (loader/import_data)))
   (println "Indexing done")
   (println "Creating clusters")
-;  (klasterovanje)
+  (clusterer/add-cluster-info)
   (println "Clustering done")
   (start-server)
   )
