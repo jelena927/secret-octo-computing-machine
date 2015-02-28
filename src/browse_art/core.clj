@@ -11,9 +11,8 @@
 
 (defn db-initial-setup
   []
-  (do
-    (db/create-tables)
-    (db/create-index)))
+  (db/create-tables)
+  (db/create-index))
 
 (defroutes app*
   (GET "/" [] (controller/search-result ""))
@@ -24,15 +23,20 @@
 
 (def app (api app*))
 
-(defn start 
+(defn start-server 
   []
   (run-jetty app {:port 8080 :join? false}))
-;(Thread/sleep 2000)
+
 (defn -main 
   []
-  (println 
-    "app start up"
-;    (indexer/add-to-index (loader/import_data))
-    "proso indexer")
-  (start)
+  (println "Starting application")
+  (if-not (db/exists-table?)
+    (db-initial-setup))
+  (println "Starting indexer")
+  (println (indexer/add-to-index (loader/import_data)))
+  (println "Indexing done")
+  (println "Creating clusters")
+;  (klasterovanje)
+  (println "Clustering done")
+  (start-server)
   )

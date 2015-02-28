@@ -1,7 +1,9 @@
 (ns browse-art.data.indexer
   (:require [browse-art.db.db :as db]))
 
-(def ignore-words ["the", "of", "to", "and", "a", "in", "is", "it"])
+(def ignore-words ["the", "of", "to", "and", "a", "in", "is", "it"
+                   "on" "at" "too" "are" "was" "did" "not" "an" 
+                   "were" "no"])
 
 (defn extract-text
   [object]
@@ -21,16 +23,27 @@
       false)
     false))
 
+(defn ignore-word?
+  [word]
+  (some #(.equalsIgnoreCase word %) ignore-words))
+
+(defn contains-number?
+  [word]
+  (if (re-find #"\d" word)
+    true
+    false))
+
 (defn add-to-index 
   [objects-vector]
   (db/start-transaction
 	  (map
 	    (fn [object]
 	      (when-not (indexed? (:ObjectID object))
+         (println "Indexing" (:ObjectID object))
 	        (db/save-object object)
 	        (reduce 
 	          (fn [counter word]
-	            (if-not (some #(.equalsIgnoreCase word %) ignore-words)
+	            (if-not (or (ignore-word? word) (contains-number? word))
 	              (db/save-word-location (:ObjectID object) 
 	                                      (db/get-and-create-entry-id "word_list" "word" (.toLowerCase word)) 
 	                                      counter))

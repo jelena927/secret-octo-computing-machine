@@ -1,16 +1,19 @@
 (ns browse-art.db.db
-  (:require [clojure.java.jdbc :as jdbc]))
+  (:import com.mchange.v2.c3p0.ComboPooledDataSource)
+  (require [clojure.java.jdbc :as jdbc]
+           [jdbc.pool.c3p0    :as pool]))
 
-(def db-spec {:classname "org.sqlite.JDBC"
-              :subprotocol "sqlite"
-              :subname "browse-art-project.db"})
+(def spec
+  (pool/make-datasource-spec
+    {:classname "org.sqlite.JDBC"
+    :subprotocol "sqlite"
+    :subname "browse-art-project.db"}))
 
-(defmacro with-db [f & body]
-  `(jdbc/with-connection ~db-spec (~f ~@body)))
+(defn get-spec [] spec)
 
 (defn create-tables
   []
-  (jdbc/with-connection db-spec
+  (jdbc/with-connection spec
 	  (jdbc/create-table :word_list
 	                     [:id "integer primary key"]
 	                     [:word "varchar"])
@@ -36,46 +39,34 @@
 	                     [:object_id "integer"])))
            
 (defn create-index
- []
-  (jdbc/with-connection db-spec
+  []
+	(jdbc/with-connection spec
 	  (jdbc/do-commands "CREATE INDEX object_idx ON object_list (object_id)")
 		(jdbc/do-commands "CREATE INDEX word_idx ON word_list (word)")
-    (jdbc/do-commands "CREATE INDEX word_url_idx ON word_location (word_id)")))
+	  (jdbc/do-commands "CREATE INDEX word_url_idx ON word_location (word_id)")))
+
+(defmacro with-db [f & body]
+  `(jdbc/with-connection (get-spec) (~f ~@body)))
 
 (defn save-word-location 
   [object-id word-id location]
-  (with-db jdbc/insert-values :word_location
-    [:object_id :word_id :location]
-    [object-id word-id location]))
-
-;(defn save-record 
-;  [table record-map]
-;  (first 
-;    (vals 
-;		  (jdbc/with-connection db-spec
-;		    (jdbc/insert-record (keyword table) record-map)))))
+  (with-db 
+    jdbc/insert-values :word_location
+                       [:object_id :word_id :location]
+                       [object-id word-id location]))
 
 (defn create-new-entry 
   [table field value]
   (first 
     (vals 
-      (with-db jdbc/insert-values (keyword table) [(keyword field)] [ value ]))))
-  
-;(defn select-last-id [table]
-;	(jdbc/with-connection db-spec
-;	  (jdbc/with-query-results res [(str "SELECT MAX(id) as last FROM " table)] 
-;	    (get (first res) :last))))
-
-;(defn generate-id [table]
-;  (do
-;    (jdbc/with-connection db-spec
-;     (jdbc/do-commands 
-;         (str "insert into " table " DEFAULT VALUES ")))
-;    (select-last-id table)))
+      (with-db 
+        jdbc/insert-values 
+        (keyword table) [(keyword field)] [ value ]))))
 
 (defn get-id
   [table field value]
-  (with-db jdbc/with-query-results res 
+  (with-db 
+    jdbc/with-query-results res 
     [(str "select id from " table " where " field "='" (clojure.string/replace value #"'" "''") "'")];escaping apostrophe char
     (get (first res) :id)))
 
@@ -88,7 +79,8 @@
 		           
 (defn save-object
   [obj]
-  (with-db jdbc/insert-values :object_list 
+  (with-db 
+    jdbc/insert-values :object_list 
     [:title :creator :style :collection :period :description :keywords :medium
      :object_name :date_begin_year :date_end_year :image :object_id] 
     [(:Title obj) (:Creator obj) (:Style obj) (:Collection obj) (:Period obj)
@@ -97,7 +89,8 @@
 
 (defn select-all 
   [table]
-	(with-db jdbc/with-query-results res [(str "select * from " table)] 
+	(with-db 
+   jdbc/with-query-results res [(str "select * from " table)] 
     (doall res)))
 
 (defn get-word-id
@@ -111,22 +104,31 @@
 
 (defn get-all-object-images
   []
-  (with-db jdbc/with-query-results res [(str "select object_id, image from object_list")]
+  (with-db 
+    jdbc/with-query-results res [(str "select object_id, image from object_list")]
     (doall res)))
 
 (defn get-object-image
   [object-id]
-  (with-db jdbc/with-query-results res [(str "select image from object_list where object_id=" object-id)]
+  (with-db 
+    jdbc/with-query-results res [(str "select image from object_list where object_id=" object-id)]
     (get (first res) :image)))
 
 (defmacro start-transaction
   [& body]
-  `(jdbc/with-connection ~db-spec
+  `(jdbc/with-connection (get-spec)
      (jdbc/transaction*
       (fn [] ~@body))))
 
+
 (defn get-object
  [object-id]
-   (with-db jdbc/with-query-results res [(str "select * from object_list where object_id=" object-id)]
+   (with-db 
+     jdbc/with-query-results res [(str "select * from object_list where object_id=" object-id)]
      (first res)))
 
+(defn exists-table?
+  []
+  (execute-query "SELECT name 
+                  FROM sqlite_master 
+                  WHERE type='table' AND name='object_list';"))
