@@ -20,7 +20,7 @@
         (fn
           [[id image]]
 			      [:a {:href (str "/object/" id) } 
-			       [:img {:src (str "http://static.thewalters.org/images/" image "?width=100")}]])
+			       [:img {:src (str "http://static.thewalters.org/images/" image "?height=100")}]])
 	      objects)]
      [:aside {:class "gallery" }
       [:div
@@ -28,8 +28,8 @@
         [:input {:type "text" :placeholder "Search" :class "searchinput" :name "query" :value query
                  :size "21" :maxlength "120"}]]]
       [:div 
-       [:p "Type keywords to search through various types of art works."]
-       [:p "For example: flower home."]
+       [:p "Type key words to search through various types of art works."]
+       [:p "For example: flower watercolor."]
        [:span {:class "label back"} 
         [:a {:href "/search"} "Reset search"]]]]
      [:footer 

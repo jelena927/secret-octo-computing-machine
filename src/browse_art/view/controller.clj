@@ -27,9 +27,6 @@
   (if-let [object (db/get-object (Integer. id))]
     (object-template/layout 
       object 
-     (let [recommendation (db/get-recommendation id (:cluster object))]
-       (if (> (count recommendation) 2)
-         (repeatedly 3 #(rand-nth recommendation))
-         recommendation)))
+     (take 3 (db/get-recommendation id (:cluster object))))
     (str "Object not found!")))
 

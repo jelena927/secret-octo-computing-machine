@@ -161,5 +161,6 @@
   (execute-query 
     (str "select object_id, image 
           from object_list 
-          where cluster=" cluster " and object_id<>" obj-id)))
+          where cluster=" cluster " and object_id<>" obj-id
+         " order by random()")))
 
