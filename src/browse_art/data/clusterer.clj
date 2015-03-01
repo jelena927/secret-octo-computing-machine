@@ -7,10 +7,13 @@
   []
   (reduce 
     (fn[acc row]
-      {:words (conj (:words acc) (:word row))
+      {:words (conj (:words acc) (keyword (:word row)))
        :word-ids (conj (:word-ids acc) (:id row))}) 
     {:words [] :word-ids []} 
-    (db/select-all "word_list")))
+    (db/execute-query 
+     "select count(*) c, w.id, word 
+   from word_location l join word_list w on (l.word_id=w.id ) 
+   group by word_id having c>5 and c<60")))
 
 (defn create-instances
   [object-ids word-ids]
@@ -32,14 +35,14 @@
   [object-ids words-map]
   (make-dataset 
     "word_groups" 
-    (conj (:words words-map) :object-id)
+    (vec (cons :object-id (:words words-map) ))
     (create-instances object-ids (:word-ids words-map))))
 
 (defn make-clusters
   [object-ids]
   (let [words-map (process-words)
         ds (dataset-remove-attribute-at (create-dataset object-ids words-map) 0)
-        kmeans (make-clusterer :k-means {:number-clusters 10})]
+        kmeans (make-clusterer :k-means {:number-clusters 20})]
     (clusterer-build kmeans ds)
     (reduce 
       #(conj % (.value %2 (count (:words words-map))))
@@ -54,11 +57,3 @@
     (when (< x (count object-ids))
       (db/add-cluster-info (get object-ids x) (get clusters x))
       (recur (inc x))))))
-
-;(def ds (make-dataset "name" [:object-id :width {:kind [:good :bad]}] [ [12 34 :good] [24 53 :bad] ]))
-;(dataset-remove-attribute-at ds 1)
-;(def kmeans (make-clusterer :k-means {:number-clusters 3}))
-;
-;(clusterer-build kmeans ds)
-
-;(.value (second (clusterer-cluster kmeans ds)) 2)

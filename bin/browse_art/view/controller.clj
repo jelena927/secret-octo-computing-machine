@@ -4,7 +4,6 @@
             [browse-art.search.search-engine :as search-engine]
             [browse-art.db.db :as db]))
 
-
 (defn search-result
   [query]
   "Search result page"
@@ -26,5 +25,11 @@
   [id]
   "Object details page"
   (if-let [object (db/get-object (Integer. id))]
-    (object-template/layout object)
+    (object-template/layout 
+      object 
+     (let [recommendation (db/get-recommendation id (:cluster object))]
+       (if (> (count recommendation) 2)
+         (repeatedly 3 #(rand-nth recommendation))
+         recommendation)))
     (str "Object not found!")))
+

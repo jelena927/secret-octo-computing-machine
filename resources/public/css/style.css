@@ -66,3 +66,9 @@ aside.details{
 .back{
 	float: right;
 }
+.recommendation{
+	font-family: myFirstFont;
+}
+.recommendation img{
+	padding-right: 10px;
+}

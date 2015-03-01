@@ -2,7 +2,7 @@
   (:use [hiccup.page :only (html5 include-css include-js)]))
 
 (defn layout 
-  [obj]
+  [obj recommendation]
   (html5 
     [:head
      [:meta {:charset "utf=8"}]
@@ -16,7 +16,15 @@
       [:center
        [:h1 "Browse Art"]]]
      [:section {:class "details" }
-      [:object {:data (str "http://static.thewalters.org/images/" (:image obj) "?width=600")}]]
+      [:object {:data (str "http://static.thewalters.org/images/" (:image obj) "?width=600")}]
+      [:div {:class "recommendation"}
+       [:p "See also:"]
+	       (map
+	        (fn
+	          [r]
+				      [:a {:href (str "/object/" (:object_id r)) } 
+				       [:img {:src (str "http://static.thewalters.org/images/" (:image r) "?height=100")}]])
+		      recommendation)]]
      [:aside {:class "details" }
       [:div
        [:span {:class "label"} "Title:"] [:span (:title obj)][:br]
@@ -25,11 +33,12 @@
        [:span {:class "label"} "Collection:"] [:span (:collection obj)][:br]
        [:span {:class "label"} "Period:"] [:span (:period obj)][:br]
        [:span {:class "label"} "Description:"] [:span (:description obj)][:br]
+       [:span {:class "label"} "Classification:"] [:span (:classification obj)][:br]
        [:span {:class "label"} "Medium:"] [:span (:medium obj)][:br]
        [:span {:class "label"} "TAGS:"] [:span (:keywords obj)][:br]
        [:span {:class "label back"} 
         [:a {:href "/search"} "Go Back To Search"]]]]
      [:footer 
-      [:center "Copyright &#169; 2015 " 
+      [:center "Copyright &#169; 2015 Jelena Đorđević " 
        [:a {:href "mailto:jelena927@gmail.com"} "jelena927@gmail.com"]]]
      ]))

@@ -7,7 +7,8 @@
   (pool/make-datasource-spec
     {:classname "org.sqlite.JDBC"
     :subprotocol "sqlite"
-    :subname "browse-art-project.db"}))
+    :subname "browse-art-project.db"
+    :initial-pool-size 6}))
 
 (defn get-spec [] spec)
 
@@ -36,6 +37,7 @@
                       [:date_begin_year "integer"]
                       [:date_end_year "integer"]
                       [:image "varchar"]
+                      [:classification "varchar"]
                       [:object_id "integer"]
                       [:cluster "integer"])))
            
@@ -83,10 +85,11 @@
   (with-db 
     jdbc/insert-values :object_list 
     [:title :creator :style :collection :period :description :keywords :medium
-     :object_name :date_begin_year :date_end_year :image :object_id] 
+     :object_name :date_begin_year :date_end_year :image :classification :object_id] 
     [(:Title obj) (:Creator obj) (:Style obj) (:Collection obj) (:Period obj)
      (:Description obj) (:Keywords obj) (:Medium obj) (:ObjectName obj) (:DateBeginYear obj) 
-     (:DateEndYear obj) (first (clojure.string/split (:Images obj) #",")) (:ObjectID obj)]))
+     (:DateEndYear obj) (first (clojure.string/split (:Images obj) #",")) 
+     (:Classification obj)(:ObjectID obj)]))
 
 (defn select-all 
   [table]
@@ -152,4 +155,11 @@
   [object-id cluster]
   (with-db jdbc/update-values "object_list"
      [(str "object_id=" object-id)] {:cluster cluster}))
+
+(defn get-recommendation
+  [obj-id cluster]
+  (execute-query 
+    (str "select object_id, image 
+          from object_list 
+          where cluster=" cluster " and object_id<>" obj-id)))
 

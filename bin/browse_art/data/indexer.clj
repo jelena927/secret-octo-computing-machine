@@ -3,12 +3,14 @@
 
 (def ignore-words ["the", "of", "to", "and", "a", "in", "is", "it"
                    "on" "at" "too" "are" "was" "did" "not" "an" 
-                   "were" "no"])
+                   "were" "no" "that" "this" "with" "his" "be"
+                   "iii" "ii" "i" "as" "has" "art" "for" "its"
+                   "her" "so" "had" "like" "ad" "by" "from"])
 
 (defn extract-text
   [object]
   (str (:Title object) " " (:Creator object) " " (:Description object) " " 
-       (:Keywords object) " " (:Style object) " " (:Collection object) " " 
+       (:Keywords object) " " (:Classification object) " " (:Style object) " " (:Collection object) " " 
        (:Period object) " " (:Medium object) " " (:ObjectName object)))
 
 (defn separate-words
@@ -39,7 +41,6 @@
 	  (map
 	    (fn [object]
 	      (when-not (indexed? (:ObjectID object))
-         (println "Indexing" (:ObjectID object))
 	        (db/save-object object)
 	        (reduce 
 	          (fn [counter word]
