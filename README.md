@@ -6,6 +6,8 @@ Information about art works are obtained from [The Walters Art Museum public API
 
 - Data first go to indexer which stores information about the object and extract words useful for search. Words are ranked by their importance for particular object. Here is used algorithm from the [Programming Collective Intelligence](http://it-ebooks.info/book/330/) book, section 4.
 - After indexing data goes to clustering, where similar objects are grouped by key words. Groups are created using K-Means Clustering method. For this is used [clj-ml](https://github.com/joshuaeckroth/clj-ml), a machine learning library for Clojure built on top of Weka framework.
+ 
+Screenshots of application can be found in [img](https://github.com/jelena927/secret-octo-computing-machine/tree/master/img) folder.
 
 # 2. Technical realisation
 Application is written in [Clojure](http://clojure.org/) programming language. Database is [SQLite](https://sqlite.org/) Libraries used are [Clojure Soup](https://github.com/mfornos/clojure-soup), [clojure.java.jdbc](https://github.com/clojure/java.jdbc), [data.json](https://github.com/clojure/data.json), [Compojure](https://github.com/weavejester/compojure), [Hiccup](https://github.com/weavejester/hiccup), [Ring](https://github.com/ring-clojure/ring/), [clj-ml](https://github.com/joshuaeckroth/clj-ml), [clojure.jdbc-c3p0](https://github.com/niwibe/clojure.jdbc-c3p0).
